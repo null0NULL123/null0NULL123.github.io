@@ -8,13 +8,82 @@
     <h1 class="title">
       <span class="line fade-up delay-2">kylin</span><span class="line accent fade-up delay-3">.dev</span>
     </h1>
-    <div class="tagline fade-up delay-4">Minimal · Fast · Orderly · Extensible</div>
+    <div class="tagline fade-up delay-4" id="tagline" data-groups="Minimal,Fast,Orderly,Extensible|Clean,Efficient,Structured,Modular">Minimal · Fast · Orderly · Extensible</div>
     <div class="cta-group fade-up delay-5">
       <a href="https://blog.iocussl.dpdns.org" class="btn-primary">Read Blog</a>
       <a href="https://github.com/null0NULL123" class="btn-ghost">GitHub Profile</a>
     </div>
   </div>
 </section>
+
+<script>
+  const CHARS = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`01';
+  const SPEED = 30;
+  const SCRAMBLE_FRAMES = 8;
+  const HOLD = 3000;
+  const GAP = 800;
+
+  function decodeWords(el: HTMLElement, words: string[], cb?: () => void) {
+    let i = 0;
+    function run() {
+      if (i >= words.length) { cb?.(); return; }
+      const word = words[i];
+      let frame = 0;
+      const id = setInterval(() => {
+        let cur = '';
+        for (let j = 0; j < word.length; j++) {
+          cur += j < frame ? word[j] : CHARS[Math.random() * CHARS.length | 0];
+        }
+        const prefix = words.slice(0, i).join(' · ');
+        const suffix = words.slice(i + 1).map(w => '·'.repeat(w.length)).join(' · ');
+        const parts = [prefix, cur, suffix].filter(Boolean);
+        el.textContent = parts.join(' · ');
+        frame++;
+        if (frame > word.length) {
+          clearInterval(id);
+          i++;
+          setTimeout(run, 120);
+        }
+      }, SPEED);
+    }
+    run();
+  }
+
+  function scrambleOut(el: HTMLElement, text: string, cb?: () => void) {
+    let frame = SCRAMBLE_FRAMES;
+    const id = setInterval(() => {
+      let out = '';
+      for (let j = 0; j < text.length; j++) {
+        out += text[j] === ' ' || text[j] === '·' ? text[j] : CHARS[Math.random() * CHARS.length | 0];
+      }
+      el.textContent = out;
+      frame--;
+      if (frame <= 0) { clearInterval(id); cb?.(); }
+    }, SPEED);
+  }
+
+  const tagline = document.getElementById('tagline');
+  if (tagline) {
+    const groups = tagline.dataset.groups!.split('|').map(g => g.split(','));
+    // 立即用乱码替换静态文案，避免 fadeUp 期间显示完整文字
+    tagline.textContent = groups[0].map(w => w.split('').map(() => CHARS[Math.random() * CHARS.length | 0]).join('')).join(' · ');
+    let gi = 0;
+
+    function cycle() {
+      const words = groups[gi];
+      decodeWords(tagline, words, () => {
+        setTimeout(() => {
+          gi = (gi + 1) % groups.length;
+          scrambleOut(tagline, tagline.textContent!, () => {
+            setTimeout(cycle, 200);
+          });
+        }, HOLD);
+      });
+    }
+
+    tagline.addEventListener('animationend', () => cycle(), { once: true });
+  }
+</script>
 
 <style>
   .fade-up {
