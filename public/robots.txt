@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://null0NULL123.github.io/sitemap-index.xml
+Sitemap: https://null0null123.github.io/sitemap-index.xml
