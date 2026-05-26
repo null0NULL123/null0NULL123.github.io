@@ -34,7 +34,7 @@
 1. 从 Google Fonts API 获取 woff2 文件 URL
 2. 下载 latin 子集到 `public/fonts/`（中文由系统字体 fallback，无需 CJK 子集）
 3. 发现 Inter 300/400/600 共用同一个 woff2 文件，JetBrains Mono 400/700 同理，合并为 2 个文件
-4. 在 `global.css` 中声明 `@font-face`
+4. 在 `BaseLayout.astro` 中内联声明 `@font-face`（`font-display: optional` 避免 CLS）
 5. 在 `<head>` 中添加 `<link rel="preload">`
 
 ### 改动
@@ -46,14 +46,16 @@ public/fonts/inter-latin.woff2       (47.1 KB)
 public/fonts/jetbrains-latin.woff2   (30.7 KB)
 ```
 
-**`src/styles/global.css` — 新增 @font-face：**
+**`src/layouts/BaseLayout.astro` — 内联 @font-face 并替换 link 标签：**
+
+> 注：`global.css` 已在后续提交中移除，所有样式内联至 `BaseLayout.astro` 的 `<style is:inline is:global>` 块中。
 
 ```css
 @font-face {
   font-family: 'Inter';
   font-style: normal;
   font-weight: 300 600;
-  font-display: swap;
+  font-display: optional;
   src: url('/fonts/inter-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, ...;
 }
@@ -62,13 +64,11 @@ public/fonts/jetbrains-latin.woff2   (30.7 KB)
   font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 400 700;
-  font-display: swap;
+  font-display: optional;
   src: url('/fonts/jetbrains-latin.woff2') format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, ...;
 }
 ```
-
-**`src/layouts/BaseLayout.astro` — 替换 link 标签：**
 
 ```diff
 - <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -249,7 +249,7 @@ function resize() {
   :root {
     --bg-primary: #0a0a0a;
 -   --bg-secondary: #141414;
-    --text-primary: #e8e8e8;
+    --text-primary: #e4e4e7;
 ```
 
 ---
